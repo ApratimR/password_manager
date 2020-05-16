@@ -1,32 +1,52 @@
 #import ZODB,ZODB.FileStorage
 from checksumdir import dirhash
 
+global_signature_status = 0
+"""
+0 = signature status not verified
+1 = signature status verified
+2 = signature to be modified , previous signature not verified/ or not available(database initilize)
+"""
+
+
 #this is to verify the database
-def verify_integrety():
-    directory = "database"
-    current_hash = dirhash(directory , "sha512")
-    
-    try:
-        signature_file = open("signature.txt","r")
-        signature = signature_file.read()
-        if signature == current_hash:
-            return("database safe")
-        else:
-            return("database not safe")
-    except FileNotFoundError:
-        return("signature file does not exist")
+def verify_database_integrety():
+	global global_signature_status
+	directory = "database"
+	current_hash = dirhash(directory , "sha512")
+	
+	try:
+		signature_file = open("signature.txt","r")
+		signature = signature_file.read()
+		signature_file.close()
+
+		if signature == current_hash:
+			global_signature_status = 1
+			return("database safe")
+		else:
+			global_signature_status = 0
+			return("database not safe")
+	except FileNotFoundError:
+		global_signature_status = 2
+		update_database_signature()
 
 #this is to update the signature
 def update_database_signature():
-    if verify_integrety()=="database safe":
-        directory = "database"
-        current_hash = dirhash(directory , "sha512")
-    
-        pass
+	global global_signature_status
+	if global_signature_status == 1:
+		directory = "database"
+		current_hash = dirhash(directory , "sha512")
+	try:
+		signature_file = open("signature.txt","w")
+		signature_file.write(current_hash)
+		signature_file.close()
+	except:
+		#TODO : start working here tomorrow
+		pass
+
 
 
 #authentication process
-print(verify_integrety())
 
 
 
