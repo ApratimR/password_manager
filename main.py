@@ -28,19 +28,20 @@ def verify_database_integrety():
 			return("database not safe")
 	except FileNotFoundError:
 		global_signature_status = 2
-		update_database_signature()
+		return("signature or database not found")
 
 #this is to update the signature
 def update_database_signature():
 	global global_signature_status
-	if global_signature_status == 1:
-		directory = "database"
-		current_hash = dirhash(directory , "sha512")
+
+	directory = "database"
+	current_hash = dirhash(directory , "sha512")
 	try:
 		signature_file = open("signature.txt","w")
 		signature_file.write(current_hash)
 		signature_file.close()
 	except:
+		 
 		#TODO : start working here tomorrow
 		pass
 
