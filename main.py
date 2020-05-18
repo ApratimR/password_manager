@@ -1,12 +1,10 @@
-#import ZODB,ZODB.FileStorage
+import ZODB,ZODB.FileStorage
 from checksumdir import dirhash
 
-global_signature_status = 0
-"""
-0 = signature status not verified
-1 = signature status verified
-2 = signature to be modified , previous signature not verified/ or not available(database initilize)
-"""
+
+global_signature_status = False
+#True = signature verified
+#False = signature not verified
 
 
 #this is to verify the database
@@ -16,19 +14,39 @@ def verify_database_integrety():
 	current_hash = dirhash(directory , "sha512")
 	
 	try:
+
+		#read file
 		signature_file = open("signature.txt","r")
 		signature = signature_file.read()
 		signature_file.close()
 
+		#hash verify
 		if signature == current_hash:
-			global_signature_status = 1
+			global_signature_status = True
 			return("database safe")
 		else:
-			global_signature_status = 0
+			global_signature_status = False
 			return("database not safe")
+
+	# if the signature file is deleted
 	except FileNotFoundError:
-		global_signature_status = 2
-		return("signature or database not found")
+		global_signature_status = False
+		print("signature or database not found")
+		decision_sign_deleted()
+
+def decision_sign_deleted():
+	print("""would you like to :
+	1.would you like to resign
+	2.or check the database""")
+	try:
+		option_input = int(input())
+		if option_input == 1:
+			update_database_signature()
+		else:
+			#NOTE work on manual check of database
+			pass
+	pass
+
 
 #this is to update the signature
 def update_database_signature():
@@ -42,7 +60,6 @@ def update_database_signature():
 		signature_file.close()
 	except:
 		 
-		#TODO : start working here tomorrow
 		pass
 
 
